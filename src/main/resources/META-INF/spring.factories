@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.ssk.zsaltedfish.netty.webscoket.config.WebSocketAutoConfiguration,\
+  com.ssk.zsaltedfish.netty.webscoket.config.WebSocketMethodParamResloveConfiguration
