@@ -29,7 +29,9 @@ import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -83,9 +85,15 @@ public class WebSocketServer {
         if ("localhost".equals(socketProperties.getHost())) {
             future = serverBootstrap.bind(socketProperties.getPort()).sync();
         } else {
-            future =
-                    serverBootstrap.bind(InetSocketAddress.createUnresolved(socketProperties.getHost()
-                            , socketProperties.getPort())).sync();
+            try {
+                future = serverBootstrap.bind(new InetSocketAddress(InetAddress.getByName(socketProperties.getHost()), socketProperties.getPort())).sync();
+            } catch (UnknownHostException e) {
+                future =
+                        serverBootstrap.bind(InetSocketAddress.createUnresolved(socketProperties.getHost()
+                                , socketProperties.getPort())).sync();
+                // e.printStackTrace();
+            }
+
 
         }
         log.info("{}", socketProperties);

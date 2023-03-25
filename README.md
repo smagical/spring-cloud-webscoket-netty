@@ -19,7 +19,7 @@ exception
 pojo
   Session websocket会话，简单封装了Channel
 server
-   handler 
+   handler
        DistributeHander 负责http请求升级为websocket请求
        WebSocketEcodeHander 简单编码，把session中直接输出的的对象包装在WebSocketFrame,可覆盖自己实现
        WebSocketHander 处理websocket相关注解方法的调用,可覆盖自己实现
@@ -40,15 +40,22 @@ support
 无(随缘)
 
 #### 待处理(有待添加...)
+
 - stomp Stomp协议
 - 参数处理器不太合理
   - 依赖json转换，只支持json，string
   - 待续...
 - session封装不全
-- WebSocketEcodeHander  只能转json
+- WebSocketEcodeHander 只能转json
 - http服务
 - 引用释放问题,部分netty msg重复消费
 - 没有解码器
 
+#### bug
+
+```text
+WEBSOCKET_HANDSHAKE_KEY' is already in use 奇怪的bug，突然出现突然消失
+
+```
 
 ps: 估计没希望了.......随缘

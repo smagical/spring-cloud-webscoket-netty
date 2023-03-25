@@ -17,6 +17,7 @@ public class WebSocketProperties {
     private String host = "localhost";
     private Integer port = 8080;
     private String contextPath = "/";
+    private String subProtocol = null;
     private Ssl ssl = new Ssl();
     private String[] corsOrigins = new String[0];
     private Boolean corsAllowCredentials = false;

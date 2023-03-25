@@ -47,8 +47,7 @@ public class WebSocketAutoConfiguration {
     @ConditionalOnMissingBean(DistributeHander.class)
     @Bean
     public DistributeHander createDistributeHander(WebSocketProperties socketProperties, JsonParser jsonParser) {
-        return new DistributeHander(socketProperties.getSsl().isEnable(),
-                createPathServerEndpointMapping(), createWebSocketHander(), createDecodeHander(jsonParser));
+        return new DistributeHander(createPathServerEndpointMapping(), createWebSocketHander(), createDecodeHander(jsonParser), socketProperties);
     }
 
     @ConditionalOnMissingBean(WebSocketEcodeHander.class)

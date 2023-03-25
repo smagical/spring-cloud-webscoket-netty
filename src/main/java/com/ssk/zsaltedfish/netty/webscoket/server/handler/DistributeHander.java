@@ -1,5 +1,6 @@
 package com.ssk.zsaltedfish.netty.webscoket.server.handler;
 
+import com.ssk.zsaltedfish.netty.webscoket.config.WebSocketProperties;
 import com.ssk.zsaltedfish.netty.webscoket.constant.ExceptionCode;
 import com.ssk.zsaltedfish.netty.webscoket.exception.WebScoketExcpetion;
 import com.ssk.zsaltedfish.netty.webscoket.pojo.WebSocketSession;
@@ -18,22 +19,18 @@ import lombok.extern.slf4j.Slf4j;
 @ChannelHandler.Sharable
 public class DistributeHander extends ChannelInboundHandlerAdapter {
 
-    private Boolean sslEnabled;
     private PathServerEndpointMapping pathServerEndpointMapping;
     private WebSocketHander webSocketHander;
     private WebSocketEcodeHander webSocketEcodeHander;
+    private WebSocketProperties properties;
 
-    public DistributeHander(PathServerEndpointMapping pathServerEndpointMapping, WebSocketHander webSocketHander,
-                            WebSocketEcodeHander webSocketEcodeHander) {
-        this(false, pathServerEndpointMapping, webSocketHander, webSocketEcodeHander);
-    }
-
-    public DistributeHander(Boolean sslEnabled, PathServerEndpointMapping pathServerEndpointMapping,
-                            WebSocketHander webSocketHander, WebSocketEcodeHander webSocketEcodeHander) {
-        this.sslEnabled = sslEnabled;
+    public DistributeHander(PathServerEndpointMapping pathServerEndpointMapping,
+                            WebSocketHander webSocketHander, WebSocketEcodeHander webSocketEcodeHander,
+                            WebSocketProperties socketProperties) {
         this.pathServerEndpointMapping = pathServerEndpointMapping;
         this.webSocketHander = webSocketHander;
         this.webSocketEcodeHander = webSocketEcodeHander;
+        this.properties = socketProperties;
     }
 
 
@@ -44,9 +41,9 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
             if (msg instanceof FullHttpRequest) {
                 HttpHeaders headers = ((FullHttpRequest) msg).headers().copy();
                 if (isWebSocketRequest(headers)) {
-                    WebSocketServerHandshakerFactory handshakerFactory =
-                            new WebSocketServerHandshakerFactory(getlocalhost(((FullHttpRequest) msg).copy()), null, true);
 
+                    WebSocketServerHandshakerFactory handshakerFactory =
+                            new WebSocketServerHandshakerFactory(getlocalhost(((FullHttpRequest) msg).copy()), properties.getSubProtocol(), true);
                     WebSocketServerHandshaker serverHandshaker = handshakerFactory.newHandshaker((FullHttpRequest) msg);
                     if (headers == null) {
                         handshakerFactory.sendUnsupportedVersionResponse(ctx.channel()).addListener(
@@ -124,7 +121,7 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
 
     private String getlocalhost(FullHttpRequest request) {
         String location = request.headers().get(HttpHeaderNames.HOST) + request.uri();
-        if (sslEnabled) {
+        if (this.properties.getSsl().isEnable()) {
             return "wss://" + location;
         } else {
             return "ws://" + location;
