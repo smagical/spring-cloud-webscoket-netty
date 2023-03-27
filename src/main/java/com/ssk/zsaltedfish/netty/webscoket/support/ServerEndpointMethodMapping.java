@@ -18,18 +18,24 @@ import java.util.*;
 
 import static com.ssk.zsaltedfish.netty.webscoket.constant.ExceptionCode.HAVE_TOO_MANY_METHODS_ERROR;
 
+/**
+ * 端点处理类,把端点类把注解和方法映射起来
+ */
 public class ServerEndpointMethodMapping {
-    private static ParameterNameDiscoverer parameterNameDiscoverer;
+    private static final ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
+    //注解-->方法
+    private final Map<Class<?>, AnnatationMethodParam> annatationMethodParamHashMap;
+    //支持的注解
     private List<Class<?>> annotationClasses;
+    //处理的端点实例
     private Object bean;
-    private Map<Class<?>, AnnatationMethodParam> annatationMethodParamHashMap;
 
     private ServerEndpointMethodMapping(Object bean) throws WebScoketExcpetion {
         this(bean, Arrays.asList(OnOpen.class, OnMessage.class, OnClose.class, OnError.class, BeforeHandShake.class));
     }
 
     private ServerEndpointMethodMapping(Object bean, List<Class<?>> annotationClasses) throws WebScoketExcpetion {
-        parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
+
         ServerEndpoint serverEndpoint = AnnotationUtils.findAnnotation(bean.getClass(), ServerEndpoint.class);
         if (serverEndpoint == null) {
             throw new WebScoketExcpetion(ExceptionCode.NOT_FOUND_SERVERENDPOINT_ERROR, "" +
@@ -65,6 +71,14 @@ public class ServerEndpointMethodMapping {
         return new ServerEndpointMethodMapping(clazz);
     }
 
+    /**
+     * 获取参数对应的参数处理器
+     *
+     * @param methodParameterList
+     *
+     * @return
+     * @throws WebScoketExcpetion
+     */
     private HashMap<MethodParameter, WebSocketMethodParamReslove> getMethodParameterAndReslove(
             List<MethodParameter> methodParameterList) throws WebScoketExcpetion {
 

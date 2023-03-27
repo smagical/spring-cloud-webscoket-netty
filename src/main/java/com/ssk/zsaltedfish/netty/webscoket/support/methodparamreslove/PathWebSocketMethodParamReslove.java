@@ -15,18 +15,19 @@ import org.springframework.util.AntPathMatcher;
 
 import java.util.Map;
 
+/**
+ * 处理带有{@link  PathVariable}类型参数
+ */
 public class PathWebSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<Object> {
 
     public final static AttributeKey<Map<String, String>> WEB_SOCKET_PATH_PARAM_KEY =
-            AttributeKey.<Map<String, String>>newInstance("WEB_SOCKET_PATH_PARAM_KEY");
+            AttributeKey.newInstance("WEB_SOCKET_PATH_PARAM_KEY");
     private AntPathMatcher antPathMatcher;
-    private TypeConverter typeConverter;
+    private final TypeConverter typeConverter;
 
     public PathWebSocketMethodParamReslove(TypeConverter typeConverter) {
         this.typeConverter = typeConverter;
     }
-
-    ;
 
     @Override
     public boolean support(MethodParameter parameter) {

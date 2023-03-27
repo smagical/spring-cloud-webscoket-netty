@@ -6,6 +6,9 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
 import org.springframework.core.MethodParameter;
 
+/**
+ * 处理{@link  HttpHeaders}类型参数
+ */
 public class HttpHeadersWebSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<HttpHeaders> {
     @Override
     public boolean support(MethodParameter parameter) {

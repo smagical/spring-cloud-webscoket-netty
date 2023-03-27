@@ -39,14 +39,16 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * 开启端点服务
+ */
 @Slf4j
 public class WebSocketServer {
 
-    private WebSocketProperties socketProperties;
+    private final WebSocketProperties socketProperties;
 
 
-    private DistributeHander distributeHander;
+    private final DistributeHander distributeHander;
 
 
     @Autowired
@@ -180,7 +182,6 @@ public class WebSocketServer {
 
             CorsConfigBuilder corsConfigBuilder =
                     CorsConfigBuilder.forOrigins(socketProperties.getCorsOrigins()).allowNullOrigin();
-            ;
             if (socketProperties.getCorsAllowCredentials()) {
                 corsConfigBuilder.allowCredentials();
             }

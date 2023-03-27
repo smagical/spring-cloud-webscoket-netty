@@ -1,9 +1,12 @@
 package com.ssk.zsaltedfish.netty.webscoket.support.json;
 
+/**
+ * json转换bean
+ */
 public interface JsonParser {
-    public boolean validate(String json);
+    boolean validate(String json);
 
-    public <T> T getObject(String json, Class<T> clazz);
+    <T> T getObject(String json, Class<T> clazz);
 
-    public String toJSON(Object obj);
+    String toJSON(Object obj);
 }

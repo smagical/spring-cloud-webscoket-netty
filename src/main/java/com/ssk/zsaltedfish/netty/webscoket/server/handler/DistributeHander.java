@@ -15,14 +15,17 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * http升级websocket协议，并根据请求连接给通道绑定相应端点
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class DistributeHander extends ChannelInboundHandlerAdapter {
 
-    private PathServerEndpointMapping pathServerEndpointMapping;
-    private WebSocketHander webSocketHander;
-    private WebSocketEcodeHander webSocketEcodeHander;
-    private WebSocketProperties properties;
+    private final PathServerEndpointMapping pathServerEndpointMapping;
+    private final WebSocketHander webSocketHander;
+    private final WebSocketEcodeHander webSocketEcodeHander;
+    private final WebSocketProperties properties;
 
     public DistributeHander(PathServerEndpointMapping pathServerEndpointMapping,
                             WebSocketHander webSocketHander, WebSocketEcodeHander webSocketEcodeHander,
@@ -46,7 +49,7 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
                             new WebSocketServerHandshakerFactory(getlocalhost(((FullHttpRequest) msg).copy()), properties.getSubProtocol(), true);
                     WebSocketServerHandshaker serverHandshaker = handshakerFactory.newHandshaker((FullHttpRequest) msg);
                     if (headers == null) {
-                        handshakerFactory.sendUnsupportedVersionResponse(ctx.channel()).addListener(
+                        WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel()).addListener(
                                 ChannelFutureListener.CLOSE
                         );
                     } else {
@@ -108,15 +111,20 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
         }
     }
 
+    /**
+     * 简单判断是否为websocket请求
+     *
+     * @param headers
+     *
+     * @return
+     */
     private boolean isWebSocketRequest(HttpHeaders headers) {
         if (!headers.contains(HttpHeaderNames.CONNECTION) ||
                 !"Upgrade".equalsIgnoreCase(headers.getAsString(HttpHeaderNames.CONNECTION).trim()))
             return false;
         if (!headers.contains(HttpHeaderNames.UPGRADE) || !"websocket".equalsIgnoreCase(headers.getAsString(HttpHeaderNames.UPGRADE).trim()))
             return false;
-        if (!headers.contains(HttpHeaderNames.SEC_WEBSOCKET_KEY) || !headers.contains(HttpHeaderNames.SEC_WEBSOCKET_VERSION))
-            return false;
-        return true;
+        return headers.contains(HttpHeaderNames.SEC_WEBSOCKET_KEY) && headers.contains(HttpHeaderNames.SEC_WEBSOCKET_VERSION);
     }
 
     private String getlocalhost(FullHttpRequest request) {

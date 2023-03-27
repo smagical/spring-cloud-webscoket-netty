@@ -5,10 +5,12 @@ import com.ssk.zsaltedfish.netty.webscoket.pojo.WebSocketSession;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import org.springframework.core.MethodParameter;
-
+/**
+ * 处理{@link  Session}类型参数
+ */
 public class SessionWebSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<Session> {
     public AttributeKey<WebSocketSession> WEB_SOCKET_SESSION_KEY =
-            AttributeKey.<WebSocketSession>newInstance("WEB_SOCKET_SESSION_KEY");
+            AttributeKey.newInstance("WEB_SOCKET_SESSION_KEY");
 
     @Override
     public boolean support(MethodParameter parameter) {

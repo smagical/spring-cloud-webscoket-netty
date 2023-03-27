@@ -12,11 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+/**
+ * 简单编码器,将{@link  com.ssk.zsaltedfish.netty.webscoket.pojo.Session}
+ * 写入的数据转换为 {@link  io.netty.handler.codec.http.websocketx.WebSocketFrame}
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class WebSocketEcodeHanderImpl extends WebSocketEcodeHander {
 
-    private JsonParser jsonParser;
+    private final JsonParser jsonParser;
 
     public WebSocketEcodeHanderImpl(JsonParser jsonParser) {
         this.jsonParser = jsonParser;

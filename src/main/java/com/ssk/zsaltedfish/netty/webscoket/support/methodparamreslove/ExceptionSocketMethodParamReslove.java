@@ -7,6 +7,9 @@ import org.springframework.core.MethodParameter;
 
 import static com.ssk.zsaltedfish.netty.webscoket.constant.ExceptionCode.METHOD_PARAMETER_RESOVE_ERROR;
 
+/**
+ * 处理{@link  Exception}类型参数
+ */
 public class ExceptionSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<Exception> {
 
     @Override

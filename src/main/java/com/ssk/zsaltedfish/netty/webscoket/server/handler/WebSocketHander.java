@@ -9,7 +9,6 @@ import com.ssk.zsaltedfish.netty.webscoket.support.event.WebSocketServerHandshak
 import com.ssk.zsaltedfish.netty.webscoket.support.methodparamreslove.WebSocketMethodParamReslove;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
@@ -21,7 +20,9 @@ import java.util.Map;
 
 import static com.ssk.zsaltedfish.netty.webscoket.constant.ExceptionCode.NOT_FOUND_SERVERENDPOINT_ERROR;
 
-
+/**
+ * webscoket处理器，负责调用相关端点的方法
+ */
 @Slf4j
 @ChannelHandler.Sharable
 public class WebSocketHander extends ChannelInboundHandlerAdapter {
@@ -29,6 +30,14 @@ public class WebSocketHander extends ChannelInboundHandlerAdapter {
     public static final AttributeKey<PathServerEndpointMapping.ServerEndpointMethodMappingAndPath> SERVER_ENDPOINT_METHOD_MAPPING_KEY
             = AttributeKey.newInstance("SERVER_ENDPOINT_METHOD_MAPPING_KEY");
 
+    /**
+     * 处理连接打开事件
+     *
+     * @param ctx
+     * @param evt
+     *
+     * @throws Exception
+     */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof WebSocketServerHandshakerEvent) {
@@ -36,7 +45,7 @@ public class WebSocketHander extends ChannelInboundHandlerAdapter {
                 log.debug("WebSocketHander WebSocketServerHandshakerEvent");
             }
             Object msg = ((WebSocketServerHandshakerEvent) evt).getMsg();
-            doOnOpen(ctx.channel(), ((FullHttpRequest) msg));
+            doOnOpen(ctx.channel(), msg);
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -74,12 +83,19 @@ public class WebSocketHander extends ChannelInboundHandlerAdapter {
         }
     }
 
+    /**
+     * 反射调用方法
+     *
+     * @param channel
+     * @param msg
+     * @param annotation
+     *
+     * @return
+     */
     public Object invoke(Channel channel, Object msg, Class<?> annotation) {
         try {
 
             ServerEndpointMethodMapping serverEndpointMethodMapping = getChannelMethodMapping(channel);
-
-
             if (serverEndpointMethodMapping == null)
                 throw new WebScoketExcpetion(NOT_FOUND_SERVERENDPOINT_ERROR
 
@@ -127,12 +143,26 @@ public class WebSocketHander extends ChannelInboundHandlerAdapter {
         invoke(channel, msg, OnError.class);
     }
 
+    /**
+     * 获取通道对应的端点
+     *
+     * @param channel
+     *
+     * @return
+     */
     private ServerEndpointMethodMapping getChannelMethodMapping(Channel channel) {
         if (channel.hasAttr(SERVER_ENDPOINT_METHOD_MAPPING_KEY))
             return channel.attr(SERVER_ENDPOINT_METHOD_MAPPING_KEY).get().getMapping();
         return null;
     }
 
+    /**
+     * 简单处理返回值
+     *
+     * @param channel
+     *
+     * @return
+     */
     private void sendReturn(Channel channel, Object msg) {
         if (msg == null) return;
         channel.pipeline().context(getClass().getSimpleName()).writeAndFlush(msg);

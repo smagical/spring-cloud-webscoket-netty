@@ -11,10 +11,13 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+/**
+ * 路径映射到端点
+ */
 public class PathServerEndpointMapping {
-    private HashMap<String, ServerEndpointMethodMapping> mappings;
-    private volatile ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private AntPathMatcher antPathMatcher = new AntPathMatcher();
+    private final HashMap<String, ServerEndpointMethodMapping> mappings;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     public PathServerEndpointMapping() {
         this.mappings = new HashMap<String, ServerEndpointMethodMapping>();
@@ -30,6 +33,14 @@ public class PathServerEndpointMapping {
         }
     }
 
+    /**
+     * 根据路径获取相应端点
+     *
+     * @param path
+     *
+     * @return
+     * @throws WebScoketExcpetion
+     */
     public ServerEndpointMethodMappingAndPath getServerEndpointMappingAndPath(String path) throws WebScoketExcpetion {
         lock.readLock().lock();
         try {
@@ -74,6 +85,9 @@ public class PathServerEndpointMapping {
         }
     }
 
+    /**
+     * 路径和端点类的简单封装
+     */
     public static class ServerEndpointMethodMappingAndPath {
         ServerEndpointMethodMapping mapping;
         String path;

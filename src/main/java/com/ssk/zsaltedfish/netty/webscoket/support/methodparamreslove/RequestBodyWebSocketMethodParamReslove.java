@@ -14,11 +14,13 @@ import org.springframework.core.MethodParameter;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidatorFactory;
-
+/**
+ * 处理带有{@link  RequestBody}类型参数，支持 json转bean
+ */
 public class RequestBodyWebSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<Object> {
 
-    private JsonParser jsonParser;
-    private ValidatorFactory validatorFactory;
+    private final JsonParser jsonParser;
+    private final ValidatorFactory validatorFactory;
 
     public RequestBodyWebSocketMethodParamReslove(JsonParser jsonParser, ValidatorFactory validatorFactory) {
         this.jsonParser = jsonParser;
@@ -67,7 +69,7 @@ public class RequestBodyWebSocketMethodParamReslove extends AbstractWebSocketMet
             } else {
                 throw new WebScoketExcpetion(ExceptionCode.METHOD_PARAMETER_RESOVE_ERROR, "" +
                         object.getClass().getName() +
-                        " " + object.toString() + "无法处理转换" + parameter.getParameterType().getName());
+                        " " + object + "无法处理转换" + parameter.getParameterType().getName());
             }
 
         }
@@ -93,7 +95,7 @@ public class RequestBodyWebSocketMethodParamReslove extends AbstractWebSocketMet
         } else {
             throw new WebScoketExcpetion(ExceptionCode.METHOD_PARAMETER_RESOVE_ERROR, "" +
                     object.getClass().getName() +
-                    " " + object.toString() + "无法处理转换" + parameter.getParameterType().getName());
+                    " " + object + "无法处理转换" + parameter.getParameterType().getName());
         }
     }
 

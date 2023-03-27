@@ -1,5 +1,13 @@
 package com.ssk.zsaltedfish.netty.webscoket.support.methodparamreslove;
 
+/**
+ * 处理websocket方法参数
+ * 添加order方法，参数处理器顺序，当处理参数时，会从所有参数参数处理器找到第一个处理
+ * 重写 {@link AbstractWebSocketMethodParamReslove#equals} 和 {@link AbstractWebSocketMethodParamReslove#hashCode()}
+ *
+ * @param <T>
+ */
+
 public abstract class AbstractWebSocketMethodParamReslove<T> implements WebSocketMethodParamReslove<T> {
 
     private Integer order = Integer.MAX_VALUE / 2;

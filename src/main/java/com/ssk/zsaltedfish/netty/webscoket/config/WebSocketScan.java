@@ -60,6 +60,9 @@ public class WebSocketScan implements SmartInitializingSingleton, BeanClassLoade
         }
     }
 
+    /**
+     * 获取所有参数处理器
+     */
     private void solveWebSocketMeathodParameterResolver() {
         String[] webSocketMethodParamResloveNames = context.getBeanNamesForType(WebSocketMethodParamReslove.class);
         if (log.isDebugEnabled())
@@ -70,6 +73,11 @@ public class WebSocketScan implements SmartInitializingSingleton, BeanClassLoade
         }
     }
 
+    /**
+     * 扫描所有端点
+     *
+     * @throws WebScoketExcpetion
+     */
     private void scannerWebSocketEndpointBeans() throws WebScoketExcpetion {
 
         String[] serverEndpointClassNames = context.getBeanNamesForAnnotation(ServerEndpoint.class);
@@ -96,10 +104,9 @@ public class WebSocketScan implements SmartInitializingSingleton, BeanClassLoade
     }
 
     /**
-     * 获取 ServerEndpointMethodMapping类。
+     * 获取端点处理后的实体 {@link  ServerEndpointMethodMapping}。
      *
      * @param bean
-     *
      * @return
      * @throws WebScoketExcpetion
      */

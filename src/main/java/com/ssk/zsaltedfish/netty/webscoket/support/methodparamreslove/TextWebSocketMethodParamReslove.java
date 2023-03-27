@@ -8,7 +8,9 @@ import lombok.SneakyThrows;
 import org.springframework.core.MethodParameter;
 
 import static com.ssk.zsaltedfish.netty.webscoket.constant.ExceptionCode.METHOD_PARAMETER_RESOVE_ERROR;
-
+/**
+ * 处理{@link  String}类型参数
+ */
 public class TextWebSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<String> {
     public TextWebSocketMethodParamReslove() {
         setOrder(Integer.MAX_VALUE);

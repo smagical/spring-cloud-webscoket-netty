@@ -13,11 +13,14 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 处理带有{@link  RequestParam}类型参数
+ */
 public class RequestParamWebSocketMethodParamReslove extends AbstractWebSocketMethodParamReslove<Object> {
 
     public final static AttributeKey<Map<String, List<String>>> WEB_SOCKET_PARAM_KEY =
-            AttributeKey.<Map<String, List<String>>>newInstance("WEB_SOCKET_PARAM_KEY");
-    private TypeConverter typeConverter;
+            AttributeKey.newInstance("WEB_SOCKET_PARAM_KEY");
+    private final TypeConverter typeConverter;
 
     public RequestParamWebSocketMethodParamReslove(TypeConverter typeConverter) {
         this.typeConverter = typeConverter;
