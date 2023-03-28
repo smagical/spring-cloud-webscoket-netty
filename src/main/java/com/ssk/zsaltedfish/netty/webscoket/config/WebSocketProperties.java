@@ -27,6 +27,7 @@ public class WebSocketProperties {
     //netty配置
     private Option option = new Option();
     private ChildOption childOption = new ChildOption();
+    private Loop loop = new Loop();
 
 
     @Data
@@ -101,6 +102,21 @@ public class WebSocketProperties {
         private Integer soRcvbuf = -1;
 
         private Integer soSndbuf = -1;
+
+
+    }
+
+    @Data
+    @SuperBuilder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Loop {
+
+        private Integer workerThreadCount = 1;
+
+        private Integer eventThreadCount = 64;
+
+        private Integer socketThreadCount = 64;
 
 
     }

@@ -10,6 +10,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
@@ -26,14 +27,17 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
     private final WebSocketHander webSocketHander;
     private final WebSocketEcodeHander webSocketEcodeHander;
     private final WebSocketProperties properties;
+    private final NioEventLoopGroup nioEventLoopGroup;
 
     public DistributeHander(PathServerEndpointMapping pathServerEndpointMapping,
                             WebSocketHander webSocketHander, WebSocketEcodeHander webSocketEcodeHander,
-                            WebSocketProperties socketProperties) {
+                            WebSocketProperties socketProperties,
+                            NioEventLoopGroup nioEventLoopGroup) {
         this.pathServerEndpointMapping = pathServerEndpointMapping;
         this.webSocketHander = webSocketHander;
         this.webSocketEcodeHander = webSocketEcodeHander;
         this.properties = socketProperties;
+        this.nioEventLoopGroup = nioEventLoopGroup;
     }
 
 
@@ -76,7 +80,7 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
                                 future -> {
                                     if (future.isSuccess()) {
                                         ctx.channel().attr(WebSocketHander.WEBSOCKET_HANDSHAKE_KEY).set(serverHandshaker);
-                                        ctx.pipeline().addBefore(
+                                        ctx.pipeline().addBefore(nioEventLoopGroup,
                                                 DistributeHander.class.getSimpleName(),
                                                 WebSocketEcodeHander.class.getSimpleName(),
                                                 webSocketEcodeHander);

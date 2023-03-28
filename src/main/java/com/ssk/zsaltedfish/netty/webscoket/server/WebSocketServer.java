@@ -59,8 +59,8 @@ public class WebSocketServer {
 
     @PostConstruct
     public void init() throws InterruptedException {
-        EventLoopGroup workerLoopGroup = new NioEventLoopGroup(1);
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+        EventLoopGroup workerLoopGroup = new NioEventLoopGroup(socketProperties.getLoop().getWorkerThreadCount());
+        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(socketProperties.getLoop().getEventThreadCount());
         ServerBootstrap serverBootstrap =
                 new ServerBootstrap()
                         .group(workerLoopGroup, eventLoopGroup)

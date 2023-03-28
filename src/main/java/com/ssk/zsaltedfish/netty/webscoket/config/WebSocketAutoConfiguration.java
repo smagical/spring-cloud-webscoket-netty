@@ -11,6 +11,7 @@ import com.ssk.zsaltedfish.netty.webscoket.support.json.FastJsonParser;
 import com.ssk.zsaltedfish.netty.webscoket.support.json.GsonJsonParser;
 import com.ssk.zsaltedfish.netty.webscoket.support.json.JackJsonParser;
 import com.ssk.zsaltedfish.netty.webscoket.support.json.JsonParser;
+import io.netty.channel.nio.NioEventLoopGroup;
 import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -47,7 +48,8 @@ public class WebSocketAutoConfiguration {
     @ConditionalOnMissingBean(DistributeHander.class)
     @Bean
     public DistributeHander createDistributeHander(WebSocketProperties socketProperties, JsonParser jsonParser) {
-        return new DistributeHander(createPathServerEndpointMapping(), createWebSocketHander(), createDecodeHander(jsonParser), socketProperties);
+        return new DistributeHander(createPathServerEndpointMapping(), createWebSocketHander(),
+                createDecodeHander(jsonParser), socketProperties, new NioEventLoopGroup(socketProperties.getLoop().getSocketThreadCount()));
     }
 
     @ConditionalOnMissingBean(WebSocketEcodeHander.class)
