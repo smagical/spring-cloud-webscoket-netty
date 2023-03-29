@@ -28,7 +28,7 @@ import javax.validation.ValidatorFactory;
 public class WebSocketAutoConfiguration {
 
     @Bean
-    public WebSocketServer createWebScoketServer(WebSocketProperties socketProperties, JsonParser jsonParser) {
+    public WebSocketServer createWebScoketServer(WebSocketProperties socketProperties, JsonParser jsonParser) throws InterruptedException {
         return new WebSocketServer(socketProperties, createDistributeHander(socketProperties, jsonParser));
     }
 

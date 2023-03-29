@@ -57,13 +57,19 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
                                 ChannelFutureListener.CLOSE
                         );
                     } else {
-                        PathServerEndpointMapping.ServerEndpointMethodMappingAndPath serverEndpointMethodMapping =
-                                pathServerEndpointMapping.getServerEndpointMappingAndPath(((FullHttpRequest) msg).uri());
-
-                        if (serverEndpointMethodMapping == null) {
-                            ctx.writeAndFlush(
-                                            new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND))
-                                    .addListener(ChannelFutureListener.CLOSE);
+                        PathServerEndpointMapping.ServerEndpointMethodMappingAndPath serverEndpointMethodMapping = null;
+                        try {
+                            serverEndpointMethodMapping = pathServerEndpointMapping.getServerEndpointMappingAndPath(((FullHttpRequest) msg).uri());
+                        } catch (WebScoketExcpetion e) {
+                            if (ExceptionCode.NOT_FOUND_SERVERENDPOINT_ERROR.equals(e.getCode())) {
+                                ctx.writeAndFlush(
+                                                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND))
+                                        .addListener(ChannelFutureListener.CLOSE);
+                            } else {
+                                ctx.writeAndFlush(
+                                                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR))
+                                        .addListener(ChannelFutureListener.CLOSE);
+                            }
                         }
                         ctx.channel().attr(WebSocketHander.SERVER_ENDPOINT_METHOD_MAPPING_KEY)
                                 .set(serverEndpointMethodMapping);

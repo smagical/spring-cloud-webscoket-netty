@@ -2,6 +2,8 @@ package com.ssk.zsaltedfish.netty.webscoket.server;
 
 
 import com.ssk.zsaltedfish.netty.webscoket.config.WebSocketProperties;
+import com.ssk.zsaltedfish.netty.webscoket.server.context.WebSocketServerApplicationContext;
+import com.ssk.zsaltedfish.netty.webscoket.server.event.WebSocketServerInitializedEvent;
 import com.ssk.zsaltedfish.netty.webscoket.server.handler.DistributeHander;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -18,14 +20,20 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.server.GracefulShutdownCallback;
+import org.springframework.boot.web.server.WebServer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
@@ -38,30 +46,37 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 开启端点服务
  */
 @Slf4j
-public class WebSocketServer {
+public class WebSocketServer implements WebServer, SmartLifecycle, ApplicationContextAware {
 
     private final WebSocketProperties socketProperties;
 
 
     private final DistributeHander distributeHander;
-
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private ChannelFuture future;
+    private EventLoopGroup workerLoopGroup;
+    private EventLoopGroup eventLoopGroup;
+    private ServerBootstrap serverBootstrap;
+    private ApplicationContext context;
 
     @Autowired
-    public WebSocketServer(WebSocketProperties socketProperties, DistributeHander distributeHander) {
+    public WebSocketServer(WebSocketProperties socketProperties, DistributeHander distributeHander) throws InterruptedException {
         this.socketProperties = socketProperties;
         this.distributeHander = distributeHander;
+        init();
     }
 
-    @PostConstruct
+
     public void init() throws InterruptedException {
-        EventLoopGroup workerLoopGroup = new NioEventLoopGroup(socketProperties.getLoop().getWorkerThreadCount());
-        EventLoopGroup eventLoopGroup = new NioEventLoopGroup(socketProperties.getLoop().getEventThreadCount());
-        ServerBootstrap serverBootstrap =
+        workerLoopGroup = new NioEventLoopGroup(socketProperties.getLoop().getWorkerThreadCount());
+        eventLoopGroup = new NioEventLoopGroup(socketProperties.getLoop().getEventThreadCount());
+        serverBootstrap =
                 new ServerBootstrap()
                         .group(workerLoopGroup, eventLoopGroup)
                         .channel(NioServerSocketChannel.class)
@@ -83,28 +98,6 @@ public class WebSocketServer {
         if (socketProperties.getChildOption().getSoSndbuf() != -1) {
             serverBootstrap.childOption(ChannelOption.SO_SNDBUF, socketProperties.getChildOption().getSoSndbuf());
         }
-        ChannelFuture future = null;
-        if ("localhost".equals(socketProperties.getHost())) {
-            future = serverBootstrap.bind(socketProperties.getPort()).sync();
-        } else {
-            try {
-                future = serverBootstrap.bind(new InetSocketAddress(InetAddress.getByName(socketProperties.getHost()), socketProperties.getPort())).sync();
-            } catch (UnknownHostException e) {
-                future =
-                        serverBootstrap.bind(InetSocketAddress.createUnresolved(socketProperties.getHost()
-                                , socketProperties.getPort())).sync();
-                // e.printStackTrace();
-            }
-
-
-        }
-        log.info("{}", socketProperties);
-        Runtime.getRuntime().addShutdownHook(new Thread(
-                () -> {
-                    eventLoopGroup.shutdownGracefully().awaitUninterruptibly();
-                    workerLoopGroup.shutdownGracefully().awaitUninterruptibly();
-                }
-        ));
 
     }
 
@@ -161,6 +154,82 @@ public class WebSocketServer {
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(trustStore);
         return trustManagerFactory;
+    }
+
+    @SneakyThrows
+    @Override
+    public void start() {
+        if (!isRunning()) {
+            //ChannelFuture future = null;
+            if ("localhost".equals(socketProperties.getHost())) {
+                future = serverBootstrap.bind(socketProperties.getPort()).sync();
+            } else {
+                try {
+                    future = serverBootstrap.bind(new InetSocketAddress(InetAddress.getByName(socketProperties.getHost()), socketProperties.getPort())).sync();
+                } catch (UnknownHostException e) {
+                    future =
+                            serverBootstrap.bind(InetSocketAddress.createUnresolved(socketProperties.getHost()
+                                    , socketProperties.getPort())).sync();
+                    // e.printStackTrace();
+                }
+
+            }
+            log.info("{}", socketProperties);
+            Runtime.getRuntime().addShutdownHook(new Thread(
+                    () -> {
+                        eventLoopGroup.shutdownGracefully().awaitUninterruptibly();
+                        workerLoopGroup.shutdownGracefully().awaitUninterruptibly();
+                    }
+            ));
+            isRunning.compareAndSet(true, false);
+            this.context.publishEvent(new WebSocketServerInitializedEvent(this,
+                    new WebSocketServerApplicationContext(this)));
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (isRunning()) {
+            eventLoopGroup.shutdownGracefully().awaitUninterruptibly();
+            workerLoopGroup.shutdownGracefully().awaitUninterruptibly();
+            isRunning.compareAndSet(true, false);
+        }
+    }
+
+    @Override
+    public int getPort() {
+        return socketProperties.getPort();
+    }
+
+    @Override
+    public void shutDownGracefully(GracefulShutdownCallback callback) {
+        stop();
+        WebServer.super.shutDownGracefully(callback);
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isRunning.get();
+    }
+
+    @Override
+    public boolean isAutoStartup() {
+        return SmartLifecycle.super.isAutoStartup();
+    }
+
+    @Override
+    public void stop(Runnable callback) {
+        SmartLifecycle.super.stop(callback);
+    }
+
+    @Override
+    public int getPhase() {
+        return SmartLifecycle.super.getPhase();
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
     }
 
     class HttpInitializerHander extends ChannelInitializer<NioSocketChannel> {
