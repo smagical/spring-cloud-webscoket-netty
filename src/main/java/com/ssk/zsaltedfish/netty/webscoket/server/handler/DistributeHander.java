@@ -70,6 +70,7 @@ public class DistributeHander extends ChannelInboundHandlerAdapter {
                                                 new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR))
                                         .addListener(ChannelFutureListener.CLOSE);
                             }
+                            return;
                         }
                         ctx.channel().attr(WebSocketHander.SERVER_ENDPOINT_METHOD_MAPPING_KEY)
                                 .set(serverEndpointMethodMapping);
