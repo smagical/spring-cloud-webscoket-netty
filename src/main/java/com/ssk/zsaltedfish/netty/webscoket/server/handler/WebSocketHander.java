@@ -105,7 +105,12 @@ public class WebSocketHander extends ChannelInboundHandlerAdapter {
             }
             AnnatationMethodParam methodParameterAndReslove =
                     serverEndpointMethodMapping.getMethodParameterAndReslove(annotation);
-            if (methodParameterAndReslove == null) return null;
+            if (methodParameterAndReslove == null) {
+                if (annotation.isAssignableFrom(OnError.class)) {
+                    throw new RuntimeException((Exception) msg);
+                }
+                return null;
+            }
             Object o = serverEndpointMethodMapping.getBean();
             Object[] param = new Object[methodParameterAndReslove.getMethodParameterAndReslove().size()];
             for (Map.Entry<MethodParameter, WebSocketMethodParamReslove> entry : methodParameterAndReslove.getMethodParameterAndReslove().entrySet()) {
@@ -115,8 +120,10 @@ public class WebSocketHander extends ChannelInboundHandlerAdapter {
             return ReflectionUtils.invokeMethod(methodParameterAndReslove.getMethod(), o, param);
 
         } catch (Exception e) {
-            if (OnError.class.isAssignableFrom(annotation)) return null;
-            e.printStackTrace();
+            if (OnError.class.isAssignableFrom(annotation)) {
+                throw new RuntimeException(e);
+            }
+            //e.printStackTrace();
             doOnError(channel, e);
         }
         return null;

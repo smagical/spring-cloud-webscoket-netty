@@ -130,6 +130,7 @@ public class ServerEndpointMethodMapping {
                 for (Annotation annotation : annotations) {
                     for (Class<?> annotationClass : annotationClasses) {
                         if (annotationClass.isAssignableFrom(annotation.getClass())) {
+
                             if (!methodMapping.containsKey(annotationClass)) {
                                 methodMapping.put(annotationClass, method);
                                 methodAttribution.put(method, clazz);

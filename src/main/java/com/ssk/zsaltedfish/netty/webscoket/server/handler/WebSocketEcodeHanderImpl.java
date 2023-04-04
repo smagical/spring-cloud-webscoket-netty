@@ -37,6 +37,7 @@ public class WebSocketEcodeHanderImpl extends WebSocketEcodeHander {
         } else if (msg.getClass().isArray() && byte[].class.isAssignableFrom(msg.getClass())) {
             out.add(new BinaryWebSocketFrame(Unpooled.copiedBuffer((byte[]) msg)));
         } else if (msg.getClass().isArray() && Byte[].class.isAssignableFrom(msg.getClass())) {
+
             Byte[] temp = (Byte[]) msg;
             byte[] b = new byte[temp.length];
             for (int i = 0; i < temp.length; i++) {
